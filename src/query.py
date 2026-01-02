@@ -33,6 +33,8 @@ class Arithmetic(Enum):
     DIV = "/"
 
 
+# Predicates
+
 class Predicate(BaseModel):
     pass
 
@@ -53,8 +55,19 @@ class Or(Predicate):
 
 
 class Not(Predicate):
-    predicates: Predicate
+    predicate: Predicate
 
+# Semantic Model
+
+class KpiRef(BaseModel):
+    name: str
+
+
+class FilterRef(BaseModel):
+    name: str 
+
+
+# Metrics
 
 class Column(BaseModel):
     name: str
@@ -77,20 +90,23 @@ class BinaryMetric(MetricExpr):
 
 class SelectItem(BaseModel):
     alias: Optional[str] = None
-    expression: Union[Column, MetricExpr]
+    expression: Union[Column, MetricExpr, KpiRef]
 
+
+# Query
 
 class GroupBy(BaseModel):
-    column: str
+    column: Column
 
 
 class OrderBy(BaseModel):
-    column: str
+    column: Union[Column, MetricExpr]
+    sorting: Sorting = Sorting.ASC
 
 
 class Query(BaseModel):
     table_name: str
     columns: List[SelectItem]
-    filters: Optional[Predicate] = None
+    filters: Optional[Union[Predicate, FilterRef, KpiRef]] = None
     groupby: Optional[List[GroupBy]] = None
     orderby: Optional[List[OrderBy]] = None

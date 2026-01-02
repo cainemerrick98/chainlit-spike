@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
 from typing import Optional
+from query import MetricExpr, Predicate
 
 
 class DataTypes(Enum):
@@ -24,14 +25,14 @@ class Table(BaseModel):
 
 class KPI(BaseModel):
     name: str
-    formula: str
+    expression: MetricExpr
     description: str
     return_type: DataTypes
 
 
 class Filter(BaseModel):
     name: str
-    formula: str
+    predicate: Predicate 
     description: str
 
 
