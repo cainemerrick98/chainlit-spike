@@ -63,13 +63,13 @@ class KpiRef(BaseModel):
     name: str
 
 
-class FilterRef(BaseModel):
+class FilterRef(Predicate):
     name: str 
 
 
 # Metrics
 
-class Column(BaseModel):
+class QueryColumn(BaseModel):
     name: str
 
 
@@ -90,23 +90,31 @@ class BinaryMetric(MetricExpr):
 
 class SelectItem(BaseModel):
     alias: Optional[str] = None
-    expression: Union[Column, MetricExpr, KpiRef]
+    expression: Union[QueryColumn, MetricExpr]
 
 
 # Query
 
 class GroupBy(BaseModel):
-    column: Column
+    column: QueryColumn
 
 
 class OrderBy(BaseModel):
-    column: Union[Column, MetricExpr]
+    column: Union[QueryColumn, MetricExpr]
     sorting: Sorting = Sorting.ASC
 
 
 class Query(BaseModel):
     table_name: str
+    columns: List[Union[SelectItem, KpiRef]]
+    filters: Optional[Union[Predicate]] = None
+    groupby: Optional[List[GroupBy]] = None
+    orderby: Optional[List[OrderBy]] = None
+
+
+class ResolvedQuery(BaseModel):
+    table_name: str
     columns: List[SelectItem]
-    filters: Optional[Union[Predicate, FilterRef, KpiRef]] = None
+    filters: Optional[Predicate] = None
     groupby: Optional[List[GroupBy]] = None
     orderby: Optional[List[OrderBy]] = None
