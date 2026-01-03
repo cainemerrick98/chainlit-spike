@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from enum import Enum
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Literal
 
 class Comparator(Enum):
     LESS_THAN = '<'
@@ -34,28 +34,25 @@ class Arithmetic(Enum):
 
 
 # Predicates
-
-class Predicate(BaseModel):
-    pass
-
 ComparisonValue = Union[int, float, str, List[int], List[str], None]
+Predicates = Union["And", "Comparison", "Or", "Not", "FilterRef"]
 
-class Comparison(Predicate):
+class Comparison(BaseModel):
     column: str
     comparator: Comparator
     value: Optional[ComparisonValue] = None
 
 
-class And(Predicate):
-    predicates: List[Predicate] = Field(min_length=1)
+class And(BaseModel):
+    predicates: List[Predicates] = Field(min_length=1)
 
 
-class Or(Predicate):
-    predicates: List[Predicate] = Field(min_length=1)
+class Or(BaseModel):
+    predicates: List[Predicates] = Field(min_length=1)
 
 
-class Not(Predicate):
-    predicate: Predicate
+class Not(BaseModel):
+    predicate: Predicates
 
 # Semantic Model
 
@@ -63,26 +60,25 @@ class KpiRef(BaseModel):
     name: str
 
 
-class FilterRef(Predicate):
+class FilterRef(BaseModel):
     name: str 
 
 
 # Metrics
+MetricExpr = Union["QueryColumn", "Measure", "BinaryMetric"]
 
 class QueryColumn(BaseModel):
+    kind: Literal["column"]
     name: str
 
-
-class MetricExpr(BaseModel):
-    pass
-
-
-class Measure(MetricExpr):
-    column: str
+class Measure(BaseModel):
+    kind: Literal["measure"]
+    column: QueryColumn
     aggregation: Aggregation
 
 
-class BinaryMetric(MetricExpr):
+class BinaryMetric(BaseModel):
+    kind: Literal["binary"]
     left: MetricExpr
     arithmetic: Arithmetic
     right: MetricExpr
@@ -90,7 +86,7 @@ class BinaryMetric(MetricExpr):
 
 class SelectItem(BaseModel):
     alias: Optional[str] = None
-    expression: Union[QueryColumn, MetricExpr]
+    expression: MetricExpr
 
 
 # Query
@@ -107,7 +103,7 @@ class OrderBy(BaseModel):
 class Query(BaseModel):
     table_name: str
     columns: List[Union[SelectItem, KpiRef]]
-    filters: Optional[Union[Predicate]] = None
+    filters: Optional[Predicates] = None
     groupby: Optional[List[GroupBy]] = None
     orderby: Optional[List[OrderBy]] = None
 
@@ -115,6 +111,6 @@ class Query(BaseModel):
 class ResolvedQuery(BaseModel):
     table_name: str
     columns: List[SelectItem]
-    filters: Optional[Predicate] = None
+    filters: Optional[Predicates] = None
     groupby: Optional[List[GroupBy]] = None
     orderby: Optional[List[OrderBy]] = None

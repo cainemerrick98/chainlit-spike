@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from enum import Enum
 from typing import Optional, Union, Literal
-from query import MetricExpr, Predicate
+from models.query import MetricExpr, Predicates
 
 # Errors
 class DuplicateSemanticModelEntityError(Exception):
@@ -41,7 +41,7 @@ class KPI(BaseModel):
 
 class Filter(BaseModel):
     name: str
-    predicate: Predicate 
+    predicate: Predicates
     description: str
 
 

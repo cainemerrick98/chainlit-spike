@@ -1,7 +1,7 @@
-from query import ResolvedQuery, Query, KpiRef, FilterRef, BinaryMetric, SelectItem, MetricExpr, Not, And, Or
-from semantic import SemanticModel
+from models.query import ResolvedQuery, Query, KpiRef, Measure, FilterRef, BinaryMetric, SelectItem, Not, And, Or, MetricExpr
+from models.semantic import SemanticModel
 
-def resolve_metric(expr: KpiRef | MetricExpr, semantic: SemanticModel) -> MetricExpr:
+def resolve_metric(expr: KpiRef | Measure | BinaryMetric , semantic: SemanticModel) -> MetricExpr:
     if isinstance(expr, KpiRef):
         return semantic.get_kpi(expr.name).expression
 
@@ -45,7 +45,7 @@ def resolve_query(query: Query, semantic: SemanticModel) -> ResolvedQuery:
         columns=[
             SelectItem(
                 alias=col.alias,
-                expression=resolve_metric(col, semantic)
+                expression=resolve_metric(col.expression, semantic)
             )
             if isinstance(col, SelectItem)
             # else it is a kpi ref

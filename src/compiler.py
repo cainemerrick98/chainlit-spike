@@ -1,4 +1,4 @@
-from query import (
+from models.query import (
     ResolvedQuery,
     SelectItem,
     QueryColumn,
@@ -12,7 +12,7 @@ from query import (
 
 def compile_metric(expr) -> str:
     if isinstance(expr, Measure):
-        return f"{expr.aggregation.value}({expr.column})"
+        return f"{expr.aggregation.value}({expr.column.name})"
 
     if isinstance(expr, BinaryMetric):
         left = compile_metric(expr.left)
@@ -50,11 +50,11 @@ def compile_predicate(pred) -> str:
 
     raise ValueError(f"Unsupported predicate: {pred}")
 
-
+# TODO we need to validate the aliases
 def compile_sql(query: ResolvedQuery) -> str:
     select_clause = ", ".join(
         f"{compile_metric(col.expression)}"
-        + (f" AS {col.alias}" if col.alias else "")
+        + (f" AS {col.alias.replace('" "', "")}" if col.alias else "")
         for col in query.columns
     )
 
